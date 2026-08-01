@@ -34,6 +34,13 @@ The skill checks for Reversa at startup and stops with install instructions if i
 /plugin install shipspec@rodrigopg
 ```
 
+Or manually as a bare skill:
+
+```bash
+git clone https://github.com/rodrigopg/claude-skill-shipspec /tmp/shipspec
+cp -r /tmp/shipspec/skills/shipspec ~/.claude/skills/
+```
+
 ## Usage
 
 ```
