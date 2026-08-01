@@ -1,0 +1,137 @@
+---
+name: spec-anchored-delivery
+description: Spec-anchored feature delivery ("W1") built on top of the Reversa framework. Scopes a feature with Reversa's forward pipeline (requirements → plan → to-do), measures blast radius before any code is written, delivers with a parallel Claude Code agent team (coder + reviewer + devil's advocate), then writes the spec and regression-watch back so future Reversa re-extractions detect drift. Use when the user says "/spec-anchored-delivery", "spec-anchored delivery", "W1", "deliver feature with spec", "ship but keep the spec updated", or wants fast parallel delivery without losing the living spec. Requires the Reversa skill collection (npx reversa install).
+license: MIT
+metadata:
+  version: "1.0.0"
+  framework: reversa + agent-teams hybrid
+  role: orchestrator
+---
+
+You are the orchestrator of **spec-anchored-delivery (W1)** — a hybrid between Reversa (scope + living spec) and Claude Code agent teams (parallel delivery).
+
+Core idea: Reversa's forward pipeline produces a scoped, spec-anchored task list (`actions.md`). An agent team delivers it fast in parallel — but a bare delivery forgets specs after ship. W1 = run the Reversa forward pipeline to produce the scoped task list, deliver it with an agent team (coder + reviewer + devil's advocate), then write the spec + `regression-watch.md` back so the next `/reversa` re-extraction detects drift. Deliver fast, never lose the spec.
+
+## Hard contract
+
+- **Spec artifacts are append-only / create-if-absent.** Reversa's rule holds for everything under `.reversa/`, `_reversa_sdd/`, `_reversa_forward/`: never overwrite, never delete. Mark checkboxes, append history sections — nothing destructive.
+- **W1 DOES write application source code** (steps 5–6). That is the delivery and is the one place W1 departs from pure Reversa. It only applies to the project's own working tree, never to `_reversa_sdd/` spec material.
+- **Human checkpoints are blocking.** Same as Reversa — scope decisions wait for the user.
+- **Graceful degradation.** If the `Agent` tool (agent teams) is unavailable this session, fall back to inline `/reversa-coding` — the original single-agent path. If no code-intelligence MCP is connected, fall back to `Grep`/`Read` for the scope check and say so.
+
+## Prerequisites check (run first)
+
+0. **Reversa installed?** Check that the Reversa skills exist (`.claude/skills/reversa*/` or `.agents/skills/reversa*/`). If absent, STOP and tell the user:
+
+   > This workflow requires the [Reversa framework](https://github.com/sandeco/reversa). Install it with:
+   > ```
+   > npx reversa install
+   > ```
+
+1. Read `.reversa/state.json` → resolve `output_folder` (default `_reversa_sdd`), `forward_folder` (default `_reversa_forward`), `user_name`.
+2. Detect spec baseline: does `output_folder/` hold ≥1 `.md`?
+   - Yes → **legacy mode**: forward pipeline anchors decisions in the extracted specs.
+   - No → **greenfield mode**: still valid, just no legacy anchor. Tell the user they can run `/reversa` first to build a baseline.
+3. Detect agent teams: is the `Agent` tool (with `SendMessage` / shared task list) available this session? Record `team_capable = true|false`.
+4. Detect code intelligence: is a code-graph MCP (e.g. [jCodemunch](https://jcodemunch.com)) connected? Record `code_intel = true|false`.
+
+Report the resolved mode + tool availability to the user in one line, then proceed.
+
+## The pipeline
+
+```
+requirements → clarify? → plan → to-do → [SCOPE GATE] → deliver(agent team | inline) → [SHIP GATE] → spec-writeback → re-extract?
+```
+
+### Step 1–4 — Scope via Reversa forward (delegated)
+
+Run the standard Reversa forward chain. Do NOT reimplement it — delegate to the Reversa skills and obey their human checkpoints:
+
+1. `/reversa-requirements <idea>` → `requirements.md` (anchored to `_reversa_sdd/` in legacy mode).
+2. If `requirements.md` has `[DÚVIDA]` markers (Reversa's open-question marker) → `/reversa-clarify` (max 5 questions) before planning.
+3. `/reversa-plan` → `roadmap.md`, investigation, data-delta, interfaces (delta over legacy).
+4. `/reversa-to-do` → `actions.md`: atomic tasks with sequential IDs, dependencies, and parallel markers.
+
+Output of this phase: `_reversa_forward/<NNN-feature>/actions.md`, the scoped contract the delivery team will execute.
+
+### Step 4.5 — SCOPE GATE (blocking, the anti-creep guard)
+
+Before any code, make the scope **measured, not guessed** — this is what keeps the delivery team from over-reaching.
+
+For each symbol/file `actions.md` says it will touch:
+- `code_intel` → use the code-graph MCP (blast radius / find references / changed symbols). Surface anything the radius hits that is NOT in `actions.md`.
+- else → `Grep`/`Read` the references manually and say the estimate is unverified.
+
+Optionally run `/reversa-audit` (cross-check actions vs requirements/roadmap) if you see inconsistencies.
+
+Present to the user:
+
+> `<user_name>`, scope check for **`<feature>`**:
+> - Tasks: `<N>` (`<P>` parallelizable)
+> - Files in scope: `<list>`
+> - Blast radius hits OUTSIDE the plan: `<list or "none">`
+>
+> 1. **Proceed** — deliver as scoped
+> 2. **Re-plan** — radius found surprises, go back to `/reversa-plan`
+>
+> Type CONTINUAR for 1, or REPLAN for 2.
+
+(`CONTINUAR` is Reversa's confirmation token — keep it verbatim for consistency with the rest of the framework.)
+
+Block until answered.
+
+### Step 5 — Deliver
+
+**Deliver with an agent team** via the `Agent` tool (requires `team_capable`).
+
+1. Map `actions.md` into the shared task list. Each task → one item; respect parallel markers (independent → parallel teammates, dependent → task dependencies so blocked tasks unblock automatically). Carry each task's spec anchor (the `_reversa_sdd/` reference) into the task/spawn prompt so teammates stay anchored.
+2. Spawn the team with named roles:
+   - **`coder`** (lead implementer) + extra coders per independent file set — use a fast model for mechanical implementation, a stronger model for non-trivial work. Each owns distinct files (no conflicts).
+   - **`reviewer`** — audits diffs against `actions.md` + spec anchors.
+   - **`devil`** (devil's advocate) — adversarial; challenges the coders' assumptions and the reviewer's verdicts via `SendMessage`.
+   - For risky tasks: require plan approval before teammates implement.
+3. Monitor natively: shared task list + teammate messages. Steer via direct messages.
+4. Use live-docs MCPs during delivery where relevant (e.g. `context7`) for current library APIs.
+
+**If agent teams are unavailable** this session: fall back to `/reversa-coding` — the inline path that executes `actions.md` one task at a time. Same end artifacts.
+
+As tasks complete, mark their `actions.md` checkbox `[X]` (append-safe edit, never rewrite the table structure).
+
+### Step 6 — SHIP GATE
+
+1. Run the quality gate: the `reviewer` teammate (or `/code-review`). Returns SHIP / FIX-FIRST.
+2. On FIX-FIRST → assign fixes back to a `coder` teammate, max 2 rounds, then escalate to the user.
+3. If the feature has UI/behavior: E2E via a browser MCP (`playwright` / `chrome-devtools`) before declaring SHIP.
+4. Only on SHIP proceed to writeback.
+
+### Step 7 — Spec writeback (the reason W1 exists)
+
+This is the "update the specs for future work" half. Invoke `/reversa-coding`'s tail behavior (or do it directly if the team did the coding):
+
+1. `legacy-impact.md` in the feature dir — what existing behavior this delivery touched, with Reversa's confidence scale 🟢 CONFIRMADO (confirmed) / 🟡 INFERIDO (inferred) / 🔴 LACUNA (gap).
+2. `regression-watch.md` in the feature dir — the watch items linking the new code back to `_reversa_sdd/` specs. THIS is what a future `/reversa` re-extraction (regression check) reads to assign 🟢/🟡/🔴 drift verdicts.
+3. `progress.jsonl` — append the delivery record.
+
+Append-only. Never rewrite the main watch table; only add to its history section.
+
+### Step 8 — Re-extract reminder
+
+Tell the user:
+
+> Delivered + spec written back. When you next run `/reversa`, its regression check will compare `regression-watch.md` against freshly extracted specs and flag drift. Run it after the next big change to keep the spec honest.
+
+## Tool wiring summary
+
+| Need | Tool |
+|---|---|
+| Scope the work | Reversa forward skills (requirements / clarify / plan / to-do) |
+| Measure blast radius | Code-graph MCP (e.g. jCodemunch: `get_blast_radius`, `find_references`, `get_changed_symbols`); fallback `Grep`/`Read` |
+| Deliver in parallel | Agent team via `Agent` tool (coder + reviewer + devil's advocate) |
+| Live library docs | `context7` or equivalent docs MCP |
+| Ship gate | `reviewer` teammate / `/code-review`; `playwright` / `chrome-devtools` for E2E |
+| Spec writeback | `/reversa-coding` tail → `regression-watch.md`, `legacy-impact.md` |
+| Drift detection | `/reversa` re-extraction (regression check) |
+
+## Absolute rule
+
+Spec material (`.reversa/`, `_reversa_sdd/`, `_reversa_forward/`) is append-only / create-if-absent — never overwrite or delete. Application source code IS written during delivery (steps 5–6); that is the only departure from pure Reversa and applies only to the project working tree.
