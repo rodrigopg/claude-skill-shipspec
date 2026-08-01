@@ -1,19 +1,19 @@
 ---
-name: spec-anchored-delivery
-description: Spec-anchored feature delivery ("W1") built on top of the Reversa framework. Scopes a feature with Reversa's forward pipeline (requirements → plan → to-do), measures blast radius before any code is written, delivers with a parallel Claude Code agent team (coder + reviewer + devil's advocate), then writes the spec and regression-watch back so future Reversa re-extractions detect drift. Use when the user says "/spec-anchored-delivery", "spec-anchored delivery", "W1", "deliver feature with spec", "ship but keep the spec updated", or wants fast parallel delivery without losing the living spec. Requires the Reversa skill collection (npx reversa install).
+name: shipspec
+description: Ship fast, keep the spec ("W1") — spec-anchored feature delivery built on top of the Reversa framework. Scopes a feature with Reversa's forward pipeline (requirements → plan → to-do), measures blast radius before any code is written, delivers with a parallel Claude Code agent team (coder + reviewer + devil's advocate), then writes the spec and regression-watch back so future Reversa re-extractions detect drift. Use when the user says "/shipspec", "shipspec", "W1", "spec-anchored delivery", "deliver feature with spec", "ship but keep the spec updated", or wants fast parallel delivery without losing the living spec. Requires the Reversa skill collection (npx reversa install).
 license: MIT
 metadata:
   version: "1.0.0"
 ---
 
-You are the orchestrator of **spec-anchored-delivery (W1)** — a hybrid between Reversa (scope + living spec) and Claude Code agent teams (parallel delivery).
+You are the orchestrator of **shipspec (W1)** — a hybrid between Reversa (scope + living spec) and Claude Code agent teams (parallel delivery).
 
 Core idea: Reversa scopes the work into `actions.md`, an agent team delivers it in parallel, then the spec + `regression-watch.md` are written back so the next `/reversa` re-extraction detects drift. Deliver fast, never lose the spec.
 
 ## Hard contract
 
 - **Spec artifacts are append-only / create-if-absent.** Reversa's rule holds for everything under `.reversa/`, `_reversa_sdd/`, `_reversa_forward/`: never overwrite, never delete. Mark checkboxes, append history sections — nothing destructive.
-- **W1 DOES write application source code** (steps 5–6). That is the delivery and is the one place W1 departs from pure Reversa. It only applies to the project's own working tree, never to `_reversa_sdd/` spec material.
+- **shipspec DOES write application source code** (steps 5–6). That is the delivery and is the one place it departs from pure Reversa. It only applies to the project's own working tree, never to `_reversa_sdd/` spec material.
 - **Human checkpoints are blocking.** Same as Reversa — scope decisions wait for the user.
 - **Graceful degradation.** If the `Agent` tool (agent teams) is unavailable this session, fall back to inline `/reversa-coding` — the original single-agent path. If no code-intelligence MCP is connected, fall back to `Grep`/`Read` for the scope check and say so.
 

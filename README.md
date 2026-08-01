@@ -1,8 +1,8 @@
-# spec-anchored-delivery (W1)
+# shipspec
 
-Spec-anchored feature delivery for Claude Code: scope with [Reversa](https://github.com/sandeco/reversa), measure blast radius before writing code, deliver with a parallel agent team, then write the spec back so future Reversa runs detect drift.
+**Ship fast, keep the spec.** Spec-anchored feature delivery for Claude Code: scope with [Reversa](https://github.com/sandeco/reversa), measure blast radius before writing code, deliver with a parallel agent team, then write the spec back so future Reversa runs detect drift.
 
-**The problem it solves:** fast parallel delivery usually ends with "spec amnesia" — the code ships, the spec rots. W1 keeps Reversa's living spec as the anchor on both ends of the delivery.
+**The problem it solves:** fast parallel delivery usually ends with "spec amnesia" — the code ships, the spec rots. shipspec keeps Reversa's living spec as the anchor on both ends of the delivery.
 
 ## Pipeline
 
@@ -31,16 +31,16 @@ The skill checks for Reversa at startup and stops with install instructions if i
 
 ```
 /plugin marketplace add rodrigopg/claude-plugins
-/plugin install spec-anchored-delivery@rodrigopg
+/plugin install shipspec@rodrigopg
 ```
 
 ## Usage
 
 ```
-/spec-anchored-delivery <feature idea>
+/shipspec <feature idea>
 ```
 
-Also triggers on "W1", "deliver feature with spec", "ship but keep the spec updated".
+Also triggers on "W1", "spec-anchored delivery", "deliver feature with spec", "ship but keep the spec updated".
 
 ## Credits
 
