@@ -10,10 +10,8 @@ Spec-anchored feature delivery for Claude Code: scope with [Reversa](https://git
 requirements → clarify? → plan → to-do → [SCOPE GATE] → deliver (agent team) → [SHIP GATE] → spec writeback → re-extract
 ```
 
-- **Scope** — Reversa's forward pipeline (`/reversa-requirements` → `/reversa-plan` → `/reversa-to-do`) produces `actions.md`, an atomic, spec-anchored task list.
-- **Scope gate** — blast radius is *measured* (code-graph MCP, or `Grep` fallback), not guessed. Anything the radius hits outside the plan is surfaced before a single line of code. Blocking human checkpoint.
-- **Deliver** — a Claude Code agent team (coder + reviewer + devil's advocate) executes `actions.md` in parallel, each teammate anchored to its spec reference. Falls back to inline `/reversa-coding` when agent teams are unavailable.
-- **Ship gate** — review against `actions.md` + spec anchors; E2E via browser MCP when there is UI.
+- **Scope** — Reversa's forward pipeline produces `actions.md`, an atomic spec-anchored task list; a blocking scope gate *measures* blast radius before any code.
+- **Deliver** — a Claude Code agent team (coder + reviewer + devil's advocate) executes it in parallel, reviewed against the spec at the ship gate; falls back to inline `/reversa-coding`.
 - **Writeback** — `legacy-impact.md`, `regression-watch.md`, and `progress.jsonl` are appended so the next `/reversa` re-extraction flags drift between spec and shipped code.
 
 Spec material (`.reversa/`, `_reversa_sdd/`, `_reversa_forward/`) is append-only — the workflow never overwrites or deletes it.

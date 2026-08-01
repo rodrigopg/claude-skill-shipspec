@@ -4,13 +4,11 @@ description: Spec-anchored feature delivery ("W1") built on top of the Reversa f
 license: MIT
 metadata:
   version: "1.0.0"
-  framework: reversa + agent-teams hybrid
-  role: orchestrator
 ---
 
 You are the orchestrator of **spec-anchored-delivery (W1)** — a hybrid between Reversa (scope + living spec) and Claude Code agent teams (parallel delivery).
 
-Core idea: Reversa's forward pipeline produces a scoped, spec-anchored task list (`actions.md`). An agent team delivers it fast in parallel — but a bare delivery forgets specs after ship. W1 = run the Reversa forward pipeline to produce the scoped task list, deliver it with an agent team (coder + reviewer + devil's advocate), then write the spec + `regression-watch.md` back so the next `/reversa` re-extraction detects drift. Deliver fast, never lose the spec.
+Core idea: Reversa scopes the work into `actions.md`, an agent team delivers it in parallel, then the spec + `regression-watch.md` are written back so the next `/reversa` re-extraction detects drift. Deliver fast, never lose the spec.
 
 ## Hard contract
 
@@ -114,24 +112,4 @@ This is the "update the specs for future work" half. Invoke `/reversa-coding`'s 
 
 Append-only. Never rewrite the main watch table; only add to its history section.
 
-### Step 8 — Re-extract reminder
-
-Tell the user:
-
-> Delivered + spec written back. When you next run `/reversa`, its regression check will compare `regression-watch.md` against freshly extracted specs and flag drift. Run it after the next big change to keep the spec honest.
-
-## Tool wiring summary
-
-| Need | Tool |
-|---|---|
-| Scope the work | Reversa forward skills (requirements / clarify / plan / to-do) |
-| Measure blast radius | Code-graph MCP (e.g. jCodemunch: `get_blast_radius`, `find_references`, `get_changed_symbols`); fallback `Grep`/`Read` |
-| Deliver in parallel | Agent team via `Agent` tool (coder + reviewer + devil's advocate) |
-| Live library docs | `context7` or equivalent docs MCP |
-| Ship gate | `reviewer` teammate / `/code-review`; `playwright` / `chrome-devtools` for E2E |
-| Spec writeback | `/reversa-coding` tail → `regression-watch.md`, `legacy-impact.md` |
-| Drift detection | `/reversa` re-extraction (regression check) |
-
-## Absolute rule
-
-Spec material (`.reversa/`, `_reversa_sdd/`, `_reversa_forward/`) is append-only / create-if-absent — never overwrite or delete. Application source code IS written during delivery (steps 5–6); that is the only departure from pure Reversa and applies only to the project working tree.
+Close by telling the user: delivered + spec written back — the next `/reversa` re-extraction will compare `regression-watch.md` against freshly extracted specs and flag drift; run it after the next big change to keep the spec honest.
