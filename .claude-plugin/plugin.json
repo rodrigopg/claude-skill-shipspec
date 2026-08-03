@@ -1,0 +1,20 @@
+{
+  "name": "shipspec",
+  "version": "1.0.0",
+  "description": "Ship fast, keep the spec — Reversa forward pipeline scopes the work, blast radius is measured before code, a parallel agent team (coder + reviewer + devil's advocate) delivers, then spec + regression-watch are written back so future Reversa runs catch drift",
+  "author": {
+    "name": "Rodrigo Gonçalves",
+    "url": "https://github.com/rodrigopg"
+  },
+  "repository": "https://github.com/rodrigopg/claude-skill-shipspec",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "reversa",
+    "spec-driven-development",
+    "agent-teams",
+    "delivery",
+    "regression-watch",
+    "blast-radius"
+  ]
+}
