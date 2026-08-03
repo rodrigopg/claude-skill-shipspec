@@ -44,10 +44,10 @@ cp -r /tmp/shipspec/skills/shipspec ~/.claude/skills/
 ## Usage
 
 ```
-/shipspec <feature idea>
+/shipspec:shipspec <feature idea>
 ```
 
-Also triggers on "W1", "spec-anchored delivery", "deliver feature with spec", "ship but keep the spec updated".
+(Bare-skill install: `/shipspec`.) Also triggers on "W1", "spec-anchored delivery", "deliver feature with spec", "ship but keep the spec updated".
 
 ## Credits
 

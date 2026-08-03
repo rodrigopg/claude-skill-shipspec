@@ -2,8 +2,6 @@
 name: shipspec
 description: Ship fast, keep the spec ("W1") — spec-anchored feature delivery built on top of the Reversa framework. Scopes a feature with Reversa's forward pipeline (requirements → plan → to-do), measures blast radius before any code is written, delivers with a parallel Claude Code agent team (coder + reviewer + devil's advocate), then writes the spec and regression-watch back so future Reversa re-extractions detect drift. Use when the user says "/shipspec", "shipspec", "W1", "spec-anchored delivery", "deliver feature with spec", "ship but keep the spec updated", or wants fast parallel delivery without losing the living spec. Requires the Reversa skill collection (npx reversa install).
 license: MIT
-metadata:
-  version: "1.0.0"
 ---
 
 You are the orchestrator of **shipspec (W1)** — a hybrid between Reversa (scope + living spec) and Claude Code agent teams (parallel delivery).
@@ -12,7 +10,7 @@ Core idea: Reversa scopes the work into `actions.md`, an agent team delivers it 
 
 ## Hard contract
 
-- **Spec artifacts are append-only / create-if-absent.** Reversa's rule holds for everything under `.reversa/`, `_reversa_sdd/`, `_reversa_forward/`: never overwrite, never delete. Mark checkboxes, append history sections — nothing destructive.
+- **Spec artifacts are append-only / create-if-absent.** shipspec's contract for everything under `.reversa/`, `_reversa_sdd/`, `_reversa_forward/` (stricter than Reversa's own agents): never overwrite, never delete. Mark checkboxes, append history sections — nothing destructive.
 - **shipspec DOES write application source code** (steps 5–6). That is the delivery and is the one place it departs from pure Reversa. It only applies to the project's own working tree, never to `_reversa_sdd/` spec material.
 - **Human checkpoints are blocking.** Same as Reversa — scope decisions wait for the user.
 - **Graceful degradation.** If the `Agent` tool (agent teams) is unavailable this session, fall back to inline `/reversa-coding` — the original single-agent path. If no code-intelligence MCP is connected, fall back to `Grep`/`Read` for the scope check and say so.
@@ -43,7 +41,7 @@ requirements → clarify? → plan → to-do → [SCOPE GATE] → deliver(agent 
 
 ### Step 1–4 — Scope via Reversa forward (delegated)
 
-Run the standard Reversa forward chain. Do NOT reimplement it — delegate to the Reversa skills and obey their human checkpoints:
+Run Reversa's forward skills — a deliberate subset of the full upstream chain (`/reversa-quality` and `/reversa-sync` are covered by shipspec's own gates and writeback). Do NOT reimplement them — delegate and obey their human checkpoints:
 
 1. `/reversa-requirements <idea>` → `requirements.md` (anchored to `_reversa_sdd/` in legacy mode).
 2. If `requirements.md` has `[DÚVIDA]` markers (Reversa's open-question marker) → `/reversa-clarify` (max 5 questions) before planning.
@@ -104,7 +102,7 @@ As tasks complete, mark their `actions.md` checkbox `[X]` (append-safe edit, nev
 
 ### Step 7 — Spec writeback (the reason W1 exists)
 
-This is the "update the specs for future work" half. Invoke `/reversa-coding`'s tail behavior (or do it directly if the team did the coding):
+This is the "update the specs for future work" half — what upstream Reversa calls convergence (`/reversa-sync`). Invoke `/reversa-coding`'s tail behavior (or do it directly if the team did the coding):
 
 1. `legacy-impact.md` in the feature dir — what existing behavior this delivery touched, with Reversa's confidence scale 🟢 CONFIRMADO (confirmed) / 🟡 INFERIDO (inferred) / 🔴 LACUNA (gap).
 2. `regression-watch.md` in the feature dir — the watch items linking the new code back to `_reversa_sdd/` specs. THIS is what a future `/reversa` re-extraction (regression check) reads to assign 🟢/🟡/🔴 drift verdicts.
