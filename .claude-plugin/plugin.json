@@ -1,6 +1,6 @@
 {
   "name": "shipspec",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Ship fast, keep the spec — Reversa forward pipeline scopes the work, blast radius is measured before code, a parallel agent team (coder + reviewer + devil's advocate) delivers, then spec + regression-watch are written back so future Reversa runs catch drift",
   "author": {
     "name": "Rodrigo Gonçalves",
