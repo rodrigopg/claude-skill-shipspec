@@ -10,7 +10,7 @@ Core idea: Reversa scopes the work into `actions.md`, an agent team delivers it 
 
 ## Hard contract
 
-- **Spec artifacts are append-only / create-if-absent.** shipspec's contract for everything under `.reversa/`, `_reversa_sdd/`, `_reversa_forward/` (stricter than Reversa's own agents): never overwrite, never delete. Mark checkboxes, append history sections — nothing destructive.
+- **Spec artifacts are append-only / create-if-absent.** shipspec's contract for everything under `.reversa/`, `_reversa_sdd/`, `_reversa_forward/` (stricter than Reversa's own agents): never overwrite, never delete. Mark checkboxes, append history sections — nothing destructive. **Exception:** state-machine fields inside `.reversa/active-requirements.json` (`current-stage`, `stages-completed`, `shipped-features`) are advanced in place as part of Step 7 — that file tracks pipeline progress, not spec content, so updating its state fields is not an overwrite of spec material.
 - **shipspec DOES write application source code** (steps 5–6). That is the delivery and is the one place it departs from pure Reversa. It only applies to the project's own working tree, never to `_reversa_sdd/` spec material.
 - **Human checkpoints are blocking.** Same as Reversa — scope decisions wait for the user.
 - **Graceful degradation.** If the `Agent` tool (agent teams) is unavailable this session, fall back to inline `/reversa-coding` — the original single-agent path. If no code-intelligence MCP is connected, fall back to `Grep`/`Read` for the scope check and say so.
@@ -98,8 +98,8 @@ As tasks complete, mark their `actions.md` checkbox `[X]` (append-safe edit, nev
 1. Run the quality gate: the `reviewer` teammate (or `/code-review`). Returns SHIP / FIX-FIRST.
 2. On FIX-FIRST → assign fixes back to a `coder` teammate, max 2 rounds, then escalate to the user.
 3. If the feature has UI/behavior: E2E via a browser MCP (`playwright` / `chrome-devtools`) before declaring SHIP.
-4. Only on SHIP proceed to writeback.
-5. Before declaring SHIP, verify closure: every `actions.md` task is `[X]` (a remaining `[ ]` is either unfinished work or a checkbox marked in a discarded tree — investigate, don't ignore), and the writeback of Step 7 is queued. A de-scoped task must be marked `[X]` with a one-line reason, never left `[ ]`.
+4. If an `actions.md` exists for this feature: verify closure before declaring SHIP — every task is `[X]`. A remaining `[ ]` is either unfinished work or a checkbox marked in a discarded tree — investigate, don't ignore. A de-scoped task is also marked `[X]`, with its one-line reason recorded in `legacy-impact.md` (Step 7.1), never left `[ ]`. No `actions.md` (e.g. an inline single-file delivery with no formal plan) → this check is satisfied trivially, skip to 5.
+5. Only on SHIP proceed to writeback (Step 7) — commit to doing it now, in this same PR, not as a follow-up.
 
 ### Step 7 — Spec writeback (the reason W1 exists)
 
@@ -108,7 +108,7 @@ This is the "update the specs for future work" half — what upstream Reversa ca
 1. `legacy-impact.md` in the feature dir — what existing behavior this delivery touched, with Reversa's confidence scale 🟢 CONFIRMADO (confirmed) / 🟡 INFERIDO (inferred) / 🔴 LACUNA (gap).
 2. `regression-watch.md` in the feature dir — the watch items linking the new code back to `_reversa_sdd/` specs. THIS is what a future `/reversa` re-extraction (regression check) reads to assign 🟢/🟡/🔴 drift verdicts.
 3. `progress.jsonl` — append the delivery record.
-4. `.reversa/active-requirements.json` — set `current-stage: "shipped"`, complete `stages-completed`, and append the feature to `shipped-features` with `{ feature-dir, feature-id, short-name, shipped-at, pr, note }`. This is the transition the next `/reversa` reads to know the feature is done, not in-flight.
+4. `.reversa/active-requirements.json` — set `current-stage: "shipped"`; add any pipeline stage this delivery passed through (requirements/plan/to-do/coding) that is still missing from `stages-completed`; append the feature to `shipped-features` with `{ feature-dir, feature-id, short-name, shipped-at, pr, note }`. This is the transition the next `/reversa` reads to know the feature is done, not in-flight — see the Hard contract exception above.
 
 Append-only. Never rewrite the main watch table; only add to its history section.
 
