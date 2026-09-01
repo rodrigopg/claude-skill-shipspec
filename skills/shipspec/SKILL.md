@@ -30,9 +30,9 @@ Core idea: Reversa scopes the work into `actions.md`, an agent team delivers it 
    - No → **greenfield mode**: still valid, just no legacy anchor. Tell the user they can run `/reversa` first to build a baseline.
 3. Detect agent teams: is the `Agent` tool (with `SendMessage` / shared task list) available this session? Record `team_capable = true|false`.
 4. Detect code intelligence: is a code-graph MCP (e.g. [jCodemunch](https://jcodemunch.com)) connected? Record `code_intel = true|false`.
-5. **Branch freshness.** `git fetch` then compare local HEAD to its upstream (`git rev-list --left-right --count HEAD...@{u}`). Behind → tell the user and pull before scoping; starting work on a stale branch risks a scope/plan built against code that's about to change underneath it. Ahead-only or no upstream → proceed, note it.
-6. **Force a full jCodemunch reindex** when `code_intel` is true: `index_folder {path: "."}` (not the incremental `resolve_repo` check) — the SCOPE GATE's blast-radius read is only as good as the index, and this workflow runs infrequently enough that a stale index is the likely default, not the edge case.
-7. **Context window.** If usage is at or above 80%, recommend the user clear context (`/clear` or a fresh session) before scoping — the forward pipeline plus a delivery team is a long, detail-heavy run, and starting it already context-pressured risks losing scope details or spec anchors mid-flight. Advisory only, does not block.
+5. **Branch freshness.** `git fetch` then compare local HEAD to its upstream (`git rev-list --left-right --count HEAD...@{u}`). Behind → pull before scoping. Ahead-only or no upstream → proceed, note it.
+6. **Force a full jCodemunch reindex** when `code_intel` is true: `index_folder {path: "."}`, not the incremental `resolve_repo` check.
+7. **Context window.** At or above 80% usage, recommend the user clear context (`/clear` or a fresh session) before scoping. Advisory only.
 
 Report the resolved mode + tool availability to the user in one line, then proceed.
 
