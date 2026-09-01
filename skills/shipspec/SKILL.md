@@ -99,6 +99,7 @@ As tasks complete, mark their `actions.md` checkbox `[X]` (append-safe edit, nev
 2. On FIX-FIRST → assign fixes back to a `coder` teammate, max 2 rounds, then escalate to the user.
 3. If the feature has UI/behavior: E2E via a browser MCP (`playwright` / `chrome-devtools`) before declaring SHIP.
 4. Only on SHIP proceed to writeback.
+5. Before declaring SHIP, verify closure: every `actions.md` task is `[X]` (a remaining `[ ]` is either unfinished work or a checkbox marked in a discarded tree — investigate, don't ignore), and the writeback of Step 7 is queued. A de-scoped task must be marked `[X]` with a one-line reason, never left `[ ]`.
 
 ### Step 7 — Spec writeback (the reason W1 exists)
 
@@ -107,7 +108,10 @@ This is the "update the specs for future work" half — what upstream Reversa ca
 1. `legacy-impact.md` in the feature dir — what existing behavior this delivery touched, with Reversa's confidence scale 🟢 CONFIRMADO (confirmed) / 🟡 INFERIDO (inferred) / 🔴 LACUNA (gap).
 2. `regression-watch.md` in the feature dir — the watch items linking the new code back to `_reversa_sdd/` specs. THIS is what a future `/reversa` re-extraction (regression check) reads to assign 🟢/🟡/🔴 drift verdicts.
 3. `progress.jsonl` — append the delivery record.
+4. `.reversa/active-requirements.json` — set `current-stage: "shipped"`, complete `stages-completed`, and append the feature to `shipped-features` with `{ feature-dir, feature-id, short-name, shipped-at, pr, note }`. This is the transition the next `/reversa` reads to know the feature is done, not in-flight.
 
 Append-only. Never rewrite the main watch table; only add to its history section.
+
+When a delivery spans multiple PRs, do the writeback in the **same PR as the last delivery commit** — not a separate docs PR you have to remember to open. A trailing `docs(reversa): writeback` commit alongside the final code change is the reliable pattern; a deferred writeback PR is exactly what gets forgotten.
 
 Close by telling the user: delivered + spec written back — the next `/reversa` re-extraction will compare `regression-watch.md` against freshly extracted specs and flag drift; run it after the next big change to keep the spec honest.
